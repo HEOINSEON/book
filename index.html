@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>도서관 독서 감상문 제출함</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=Nanum+Myeongjo&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Serif KR', serif;
+            background-color: #f5f1e9;
+            background-image: url('https://www.transparenttextures.com/patterns/paper.png');
+        }
+        .book-card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2d1b9;
+        }
+        input, textarea {
+            background-color: #fdfbf7;
+            border: 1px solid #dcd3c1 !important;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #a68b6d !important;
+            box-shadow: 0 0 0 2px rgba(166, 139, 109, 0.2);
+        }
+        .btn-submit {
+            background-color: #7d6e5d;
+            transition: all 0.3s ease;
+        }
+        .btn-submit:hover {
+            background-color: #5d5245;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full book-card p-8">
+        <header class="text-center mb-8">
+            <div class="text-4xl mb-2">📚</div>
+            <h1 class="text-2xl font-bold text-gray-800">독서 감상문 제출함</h1>
+            <p class="text-gray-500 text-sm mt-1">사서 선생님에게 여러분의 생각을 들려주세요.</p>
+        </header>
+
+        <form id="reviewForm" class="space-y-5">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">학번</label>
+                <input type="text" name="studentId" required placeholder="예: 10101" 
+                    class="w-full px-4 py-2 rounded-md transition duration-200">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">이름</label>
+                <input type="text" name="studentName" required placeholder="이름을 입력하세요" 
+                    class="w-full px-4 py-2 rounded-md transition duration-200">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">책 제목</label>
+                <input type="text" name="bookTitle" required placeholder="읽으신 책의 제목은 무엇인가요?" 
+                    class="w-full px-4 py-2 rounded-md transition duration-200">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">감상평</label>
+                <textarea name="review" required rows="5" placeholder="책을 읽고 느낀 점을 자유롭게 적어주세요." 
+                    class="w-full px-4 py-2 rounded-md transition duration-200 resize-none"></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn" 
+                class="w-full btn-submit text-white font-bold py-3 px-4 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2">
+                사서 선생님께 제출하기
+            </button>
+        </form>
+
+        <div id="statusMsg" class="mt-4 text-center hidden p-3 rounded-md"></div>
+    </div>
+
+    <script>
+        const scriptURL = 'https://script.google.com/macros/s/AKfycby6NGROKmQiQJf5S3Q6n4URN43p7g1KtuAbt4G7-byN9grptUT-02ZxLjdtaK7IgEktdA/exec';
+
+        const form = document.getElementById('reviewForm');
+        const btn = document.getElementById('submitBtn');
+        const statusMsg = document.getElementById('statusMsg');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            btn.disabled = true;
+            btn.innerText = '제출 중...';
+            statusMsg.classList.add('hidden');
+
+            // 데이터를 URLSearchParams 형식으로 변환 (전송 성공률이 가장 높음)
+            const params = new URLSearchParams(new FormData(form));
+
+            fetch(scriptURL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: params
+            })
+            .then(() => {
+                // no-cors 모드에서는 응답을 읽을 수 없지만, catch가 안 났다면 성공으로 간주
+                showMessage('감상문이 잘 접수되었습니다. 정말 멋진 독서가군요! 📖', 'success');
+                form.reset();
+            })
+            .catch(error => {
+                console.error('Error!', error.message);
+                showMessage('제출 중에 문제가 생겼어요. 사서 선생님께 문의해 주세요.', 'error');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = '사서 선생님께 제출하기';
+            });
+        });
+
+        function showMessage(text, type) {
+            statusMsg.innerText = text;
+            statusMsg.classList.remove('hidden', 'bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+            
+            if (type === 'success') {
+                statusMsg.classList.add('bg-green-100', 'text-green-700');
+            } else {
+                statusMsg.classList.add('bg-red-100', 'text-red-700');
+            }
+        }
+    </script>
+</body>
+</html>
